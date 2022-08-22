@@ -9,3 +9,6 @@ dist/
 
 # Typescript
 tsconfig.tsbuildinfo
+
+#Persistence data
+src/persistence-fs/*.json
