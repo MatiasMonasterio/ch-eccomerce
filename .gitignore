@@ -11,4 +11,4 @@ dist/
 tsconfig.tsbuildinfo
 
 #Persistence data
-src/persistence-fs/*.json
+src/containers/file/*.json
