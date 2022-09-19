@@ -1,12 +1,12 @@
 import type { Request, Response } from "express";
 import type { CartController } from "./cart.controller.d";
 
-import { cartFs, productsFs } from "../../../persistence-fs";
+import { cartDAO, productDAO } from "../../daos";
 
 const cartController: CartController = {
   createOne: async (_req: Request, res: Response): Promise<void> => {
     try {
-      const newCart = await cartFs.create({ products: [] });
+      const newCart = await cartDAO.createOne({ products: [] });
       res.json({ data: newCart.id });
     } catch (error) {
       const err = error as Error;
@@ -18,7 +18,7 @@ const cartController: CartController = {
     const cartId = req.params.cartId;
 
     try {
-      await cartFs.deleteById(cartId);
+      await cartDAO.deleteOneById(cartId);
       res.sendStatus(200);
     } catch (error) {
       const err = error as Error;
@@ -30,7 +30,9 @@ const cartController: CartController = {
     const cartId = req.params.cartId;
 
     try {
-      const cart = await cartFs.getOneById(cartId);
+      const cart = await cartDAO.getOneById(cartId);
+      if (!cart) throw new Error("Cart not found");
+
       res.send({ data: cart.products });
     } catch (error) {
       const err = error as Error;
@@ -43,11 +45,13 @@ const cartController: CartController = {
     const productId = req.body.productId;
 
     try {
-      const cart = await cartFs.getOneById(cartId);
-      const product = await productsFs.getOneById(productId);
+      const cart = await cartDAO.getOneById(cartId);
+      if (!cart) throw new Error("Cart not found");
+
+      const product = await productDAO.getOneById(productId);
 
       cart.products.push(product);
-      await cartFs.updateById(cartId, { products: cart.products });
+      await cartDAO.updateOneById(cartId, { products: cart.products });
 
       res.sendStatus(200);
     } catch (error) {
@@ -60,12 +64,15 @@ const cartController: CartController = {
     const { cartId, productId } = req.params;
 
     try {
-      const { products } = await cartFs.getOneById(cartId);
+      const cart = await cartDAO.getOneById(cartId);
+      if (!cart) throw new Error("Cart not found");
+      const { products } = cart;
+
       const productIndex = products.findIndex((product) => product.id === productId);
       if (productIndex === -1) throw new Error("Product not found on cart");
 
       products.splice(productIndex, 1);
-      await cartFs.updateById(cartId, { products: products });
+      await cartDAO.updateOneById(cartId, { products: products });
 
       res.sendStatus(200);
     } catch (error) {
