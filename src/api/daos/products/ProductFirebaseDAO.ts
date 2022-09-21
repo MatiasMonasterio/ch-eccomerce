@@ -19,8 +19,10 @@ export class ProductFirebaseDAO extends FirebaseContainer implements IProductDAO
     })) as unknown as IProduct[];
   }
 
-  async getOneById(productId: ProductId): Promise<IProduct> {
+  async getOneById(productId: ProductId): Promise<IProduct | null> {
     const product = await this.products.doc(productId).get();
+    if (!product.data()) return null;
+
     return { id: product.id, ...product.data() } as unknown as IProduct;
   }
 
@@ -34,12 +36,12 @@ export class ProductFirebaseDAO extends FirebaseContainer implements IProductDAO
       stock: newProduct.stock,
     });
 
-    return await this.getOneById(productId);
+    return (await this.getOneById(productId)) as IProduct;
   }
 
   async updateOneById(productId: ProductId, productUpdated: IUpdateProductDTO): Promise<IProduct> {
     await this.products.doc(productId).update({ ...productUpdated });
-    return await this.getOneById(productId);
+    return (await this.getOneById(productId)) as IProduct;
   }
 
   async deleteOneById(productId: ProductId): Promise<void> {

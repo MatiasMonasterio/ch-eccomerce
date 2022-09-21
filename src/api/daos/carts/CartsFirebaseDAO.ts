@@ -19,8 +19,10 @@ export class CartsFirebaseDAO extends FirebaseContainer implements ICartsDAO {
     })) as unknown as ICart[];
   }
 
-  async getOneById(cartId: CartId): Promise<ICart> {
+  async getOneById(cartId: CartId): Promise<ICart | null> {
     const cart = await this.carts.doc(cartId).get();
+    if (!cart.data()) return null;
+
     return { id: cart.id, ...cart.data() } as unknown as ICart;
   }
 
@@ -31,7 +33,7 @@ export class CartsFirebaseDAO extends FirebaseContainer implements ICartsDAO {
       updatedAt: new Date(),
     });
 
-    return await this.getOneById(cartId);
+    return (await this.getOneById(cartId)) as ICart;
   }
 
   async updateOneById(cartId: string, cartUpdated: IUpdateCartDTO): Promise<ICart> {
@@ -40,7 +42,7 @@ export class CartsFirebaseDAO extends FirebaseContainer implements ICartsDAO {
       updatedAt: new Date(),
     });
 
-    return await this.getOneById(cartId);
+    return (await this.getOneById(cartId)) as ICart;
   }
 
   async deleteOneById(cartId: string): Promise<void> {
