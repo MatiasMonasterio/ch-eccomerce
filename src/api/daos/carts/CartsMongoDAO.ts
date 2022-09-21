@@ -1,4 +1,4 @@
-import type { ICart } from "../../../domain";
+import type { ICart, IProduct } from "../../../domain";
 import type { CartId } from "../../../domain/cart";
 import type { INewCartDTO, IUpdateCartDTO } from "../../dtos/cart";
 import type { ICartsDAO } from "./ICartsDAO";
@@ -67,6 +67,13 @@ export class CartsMongoDAO extends MongoContainer implements ICartsDAO {
   }
 
   async updateOneById(cartId: CartId, cartUpdated: IUpdateCartDTO): Promise<unknown> {
+    if (cartUpdated.products) {
+      cartUpdated.products = cartUpdated.products.map((product: IProduct) => ({
+        ...product,
+        _id: product.id,
+      }));
+    }
+
     return await this.cart.updateOne({ _id: cartId }, { ...cartUpdated });
   }
 
