@@ -48,7 +48,11 @@ const cartController: CartController = {
       const cart = await cartDAO.getOneById(cartId);
       if (!cart) throw new Error("Cart not found");
 
+      const productExist = cart.products.find((product) => product.id === productId);
+      if (productExist) throw new Error("Product already exist");
+
       const product = await productDAO.getOneById(productId);
+      if (!product) throw new Error("Product not found");
 
       cart.products.push(product);
       await cartDAO.updateOneById(cartId, { products: cart.products });

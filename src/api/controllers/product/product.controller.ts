@@ -19,6 +19,8 @@ const productController: ProductController = {
 
     try {
       const product = await productDAO.getOneById(productId);
+      if (!product) throw new Error("Product not found");
+
       res.json({ data: product });
     } catch (error) {
       const err = error as Error;
