@@ -14,7 +14,17 @@ export class CartsMongoDAO extends MongoContainer implements ICartsDAO {
     const carts = await this.cart.find();
     return carts.map((cart) => ({
       id: cart._id.toString(),
-      products: cart.products,
+      products: cart.products.map((product) => ({
+        id: product._id.toString(),
+        name: product.name,
+        description: product.description,
+        code: product.code,
+        image: product.image,
+        price: product.price,
+        stock: product.stock,
+        createdAt: product.createdAt,
+        updatedAt: product.updatedAt,
+      })),
       createdAt: cart.createdAt,
       updatedAt: cart.updatedAt,
     }));
@@ -26,7 +36,17 @@ export class CartsMongoDAO extends MongoContainer implements ICartsDAO {
     return cart
       ? {
           id: cart._id.toString(),
-          products: cart.products,
+          products: cart.products.map((product) => ({
+            id: product._id.toString(),
+            name: product.name,
+            description: product.description,
+            code: product.code,
+            image: product.image,
+            price: product.price,
+            stock: product.stock,
+            createdAt: product.createdAt,
+            updatedAt: product.updatedAt,
+          })),
           createdAt: cart.createdAt,
           updatedAt: cart.updatedAt,
         }
