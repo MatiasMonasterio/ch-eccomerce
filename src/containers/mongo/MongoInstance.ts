@@ -1,0 +1,27 @@
+import mongoose from "mongoose";
+import mongoConfig from "../../config/mongo";
+
+export default class MongoInstance {
+  private static instance: MongoInstance;
+
+  private constructor() {
+    /** */
+  }
+
+  static async connect() {
+    if (!MongoInstance.instance) {
+      MongoInstance.instance = new MongoInstance();
+
+      try {
+        await mongoose.connect(mongoConfig.uri);
+        console.log("MongoDB connection successful");
+      } catch (error) {
+        throw new Error(`MongoDB connection error ${error}`);
+      }
+    }
+  }
+
+  static async disconnect() {
+    mongoose.disconnect();
+  }
+}
