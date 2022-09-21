@@ -1,7 +1,7 @@
 import { Router } from "express";
 
-import { productController } from "../controllers";
-import { isAdmin } from "../middlewares";
+import { productController } from "../../controllers";
+import { isAdmin } from "../../middlewares";
 
 const productRouter = Router();
 
