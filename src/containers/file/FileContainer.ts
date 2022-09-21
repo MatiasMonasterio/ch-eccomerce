@@ -1,18 +1,14 @@
+import type { IEntity } from "../../domain/entity";
+
 import path from "path";
 import { promises as fsPromises } from "fs";
 import { v4 as uuid } from "uuid";
 
-interface EntityPersistence {
-  id: string;
-  createdAt: number;
-  updatedAt: number;
-}
-
-export class Persistence<T, K extends T & EntityPersistence> {
+export default class FileContainer<T extends IEntity> {
   private filename: string;
 
   constructor(filename: string) {
-    this.filename = path.join(__dirname, `/${filename}.json`);
+    this.filename = path.join(__dirname, `/${filename}`);
     this.checkInitialized();
   }
 
@@ -24,47 +20,46 @@ export class Persistence<T, K extends T & EntityPersistence> {
     }
   }
 
-  private async getFileData(): Promise<K[]> {
+  private async getFileData(): Promise<T[]> {
     const data = await fsPromises.readFile(this.filename, "utf8");
     return JSON.parse(data);
   }
 
-  private async saveFileData(data: K[]): Promise<void> {
+  private async saveFileData(data: T[]): Promise<void> {
     await fsPromises.writeFile(this.filename, JSON.stringify(data), "utf8");
   }
 
-  async getAll(): Promise<K[]> {
+  async findAll(): Promise<T[]> {
     return await this.getFileData();
   }
 
-  async getOneById(id: string): Promise<K> {
+  async findById(id: string): Promise<T | null> {
     const elements = await this.getFileData();
     const element = elements.find((element) => element.id === id);
 
-    if (!element) throw new Error("Element not found");
-    return element;
+    return element ? element : null;
   }
 
-  async create(newElement: T): Promise<K> {
+  async create(newElement: Omit<T, keyof IEntity>): Promise<T> {
     const id: string = uuid();
     const createdAt: number = new Date().getTime();
     const updatedAt: number = createdAt;
 
     const elementToSave = {
       id: id,
-      ...newElement,
       createdAt: createdAt,
       updatedAt: updatedAt,
-    } as K;
+      ...newElement,
+    };
 
     const elements = await this.getFileData();
-    elements.push(elementToSave);
+    elements.push(elementToSave as unknown as T);
 
     await this.saveFileData(elements);
     return elements[elements.length - 1];
   }
 
-  async updateById(id: string, elementProperties: T): Promise<T> {
+  async updateById(id: string, elementProperties: Partial<T>): Promise<T> {
     const elements = await this.getFileData();
     const elementIndex = elements.findIndex((element) => element.id === id);
 
