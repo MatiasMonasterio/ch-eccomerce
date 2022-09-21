@@ -33,12 +33,11 @@ export default class FileContainer<T extends IEntity> {
     return await this.getFileData();
   }
 
-  async findById(id: string): Promise<T> {
+  async findById(id: string): Promise<T | null> {
     const elements = await this.getFileData();
     const element = elements.find((element) => element.id === id);
 
-    if (!element) throw new Error("Element not found");
-    return element;
+    return element ? element : null;
   }
 
   async create(newElement: Omit<T, keyof IEntity>): Promise<T> {
