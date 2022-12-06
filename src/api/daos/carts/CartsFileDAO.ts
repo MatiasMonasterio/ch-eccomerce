@@ -10,6 +10,12 @@ export class CartFileDao extends FileContainer<ICart> implements ICartsDAO {
     super("cart.json");
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getOneByUserId(_userId: string): Promise<ICart | null> {
+    const carts = await this.findAll();
+    return carts[0];
+  }
+
   async getAll(): Promise<ICart[]> {
     return await this.findAll();
   }

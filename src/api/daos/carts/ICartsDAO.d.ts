@@ -8,4 +8,5 @@ export interface ICartsDAO {
   createOne: (newCart: INewCartDTO) => Promise<ICart>;
   updateOneById: (cartId: CartId, cartUpdated: IUpdateCartDTO) => Promise<unknown>;
   deleteOneById: (cartId: CartId) => Promise<void>;
+  getOneByUserId: (userId: string) => Promise<ICart | null>;
 }
