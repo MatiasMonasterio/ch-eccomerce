@@ -1,9 +1,12 @@
 import { Router } from "express";
-import { productRouter, cartRouter } from "./routes";
+import { productRouter, cartRouter, authRouter, UserRouter } from "./routes";
+import { isAuthorized } from "./middlewares";
 
 const apiRouter = Router();
 
-apiRouter.use("/products", productRouter);
-apiRouter.use("/carts", cartRouter);
+apiRouter.use("/", authRouter);
+apiRouter.use("/products", isAuthorized, productRouter);
+apiRouter.use("/carts", isAuthorized, cartRouter);
+apiRouter.use("/user", isAuthorized, UserRouter);
 
 export default apiRouter;
