@@ -1,13 +1,42 @@
 import type { Request, Response } from "express";
 import type { CartController } from "./cart.controller.d";
 
-import { cartDAO, productDAO } from "../../daos";
+import nodemailer from "../../../nodemailer";
+import * as twilio from "../../../twilio";
+import { jwt } from "../../../utilities";
+import { cartDAO, productDAO, userDAO } from "../../daos";
 
 const cartController: CartController = {
-  createOne: async (_req: Request, res: Response): Promise<void> => {
+  getOne: async (req: Request, res: Response): Promise<void> => {
+    const token = (req.headers.authorization && req.headers.authorization.split(" ")[1]) || "";
+    const jwtUser = jwt.verify(token);
+
     try {
-      const newCart = await cartDAO.createOne({ products: [] });
-      res.json({ data: newCart.id });
+      const cart = await cartDAO.getOneByUserId(jwtUser.id);
+
+      if (cart) {
+        res.json({ data: cart });
+        return;
+      }
+
+      const user = await userDAO.getOneById(jwtUser.id);
+      const newCart = await cartDAO.createOne({ products: [], user });
+
+      res.json({ data: newCart });
+    } catch (error) {
+      const err = error as Error;
+      res.status(500).json({ error: -1, description: err.message || err });
+    }
+  },
+
+  createOne: async (req: Request, res: Response): Promise<void> => {
+    const token = (req.headers.authorization && req.headers.authorization.split(" ")[1]) || "";
+    const jwtUser = jwt.verify(token);
+
+    try {
+      const user = await userDAO.getOneById(jwtUser.id);
+      const newCart = await cartDAO.createOne({ products: [], user });
+      res.json({ data: newCart });
     } catch (error) {
       const err = error as Error;
       res.status(500).json({ error: -1, description: err.message || err });
@@ -57,7 +86,7 @@ const cartController: CartController = {
       cart.products.push(product);
       await cartDAO.updateOneById(cartId, { products: cart.products });
 
-      res.sendStatus(200);
+      res.json({ data: cart });
     } catch (error) {
       const err = error as Error;
       res.status(500).json({ error: -1, description: err.message || err });
@@ -78,7 +107,32 @@ const cartController: CartController = {
       products.splice(productIndex, 1);
       await cartDAO.updateOneById(cartId, { products: products });
 
-      res.sendStatus(200);
+      res.json({ data: cart });
+    } catch (error) {
+      const err = error as Error;
+      res.status(500).json({ error: -1, description: err.message || err });
+    }
+  },
+
+  generatePurchase: async (req: Request, res: Response): Promise<void> => {
+    const token = req.headers.authorization && req.headers.authorization.split(" ")[1];
+    const { cartId } = req.params;
+
+    try {
+      if (!token) throw new Error("invalid token");
+      const tokenDecode = jwt.verify(token);
+
+      const cart = await cartDAO.getOneById(cartId);
+      if (!cart) throw new Error("Cart not found");
+
+      const user = await userDAO.getOneById(tokenDecode.id);
+      if (!user) throw new Error("User not found");
+
+      res.send({ data: "Ok" });
+
+      nodemailer.purchase(cart, user);
+      twilio.whatsapp.purchase(user);
+      twilio.whatsapp.userPurchase(user);
     } catch (error) {
       const err = error as Error;
       res.status(500).json({ error: -1, description: err.message || err });

@@ -1,4 +1,6 @@
 import mongoose from "mongoose";
+
+import logger from "../../logger";
 import mongoConfig from "../../config/mongo";
 
 export default class MongoInstance {
@@ -14,7 +16,7 @@ export default class MongoInstance {
 
       try {
         await mongoose.connect(mongoConfig.uri);
-        console.log("MongoDB connection successful");
+        logger.info("MongoDB connection successful");
       } catch (error) {
         throw new Error(`MongoDB connection error ${error}`);
       }

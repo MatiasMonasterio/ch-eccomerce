@@ -2,9 +2,11 @@ import type { ICart } from "../../../domain";
 
 import { Schema, model } from "mongoose";
 import { productSchema } from "./Product";
+import { userSchema } from "./User";
 
 const cartSchema = new Schema<ICart>(
   {
+    user: userSchema,
     products: [productSchema],
     createdAt: { type: Date, required: false },
     updatedAt: { type: Date, required: false },

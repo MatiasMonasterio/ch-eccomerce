@@ -12,3 +12,6 @@ tsconfig.tsbuildinfo
 
 #Persistence data
 src/containers/file/*.json
+
+public/uploads/*
+app-logs/

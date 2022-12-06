@@ -10,6 +10,12 @@ export class CartsFirebaseDAO extends FirebaseContainer implements ICartsDAO {
     super();
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async getOneByUserId(_userId: string): Promise<ICart | null> {
+    const { docs: carts } = await this.carts.get();
+    return carts[0] as unknown as ICart;
+  }
+
   async getAll(): Promise<ICart[]> {
     const { docs: carts } = await this.carts.get();
 
